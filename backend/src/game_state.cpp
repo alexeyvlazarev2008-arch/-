@@ -291,6 +291,16 @@ bool GameState::end_turn() {
 
 std::string GameState::to_json() const {
     std::ostringstream o;
+    // NOTE: player names may contain non-ASCII (Cyrillic) or quotes — escape them.
+    auto esc = [](const std::string& s) {
+        std::string out;
+        for (unsigned char c : s) {
+            if (c == '"' || c == '\\') { out.push_back('\\'); out.push_back(c); }
+            else if (c == '\n') out += "\\n";
+            else out.push_back((char)c);
+        }
+        return out;
+    };
     o << "{\"phase\":" << (int)phase_
       << ",\"turn\":" << turn_
       << ",\"mined\":" << total_mined_
@@ -306,7 +316,7 @@ std::string GameState::to_json() const {
     for (size_t i = 0; i < players_.size(); ++i) {
         const auto& p = players_[i];
         if (i) o << ",";
-        o << "{\"id\":" << p.id << ",\"name\":\"" << p.name << "\",\"x\":" << p.x
+        o << "{\"id\":" << p.id << ",\"name\":\"" << esc(p.name) << "\",\"x\":" << p.x
           << ",\"y\":" << p.y << ",\"alive\":" << (p.alive ? "true" : "false")
           << ",\"gems\":" << p.stones_held << ",\"score\":" << p.contribution << "}";
     }

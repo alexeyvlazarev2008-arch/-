@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320">
+  <rect width="900" height="320" fill="#171420"/>
+  <defs>
+    <g id="dwarf">
+      <!-- тело в квадратной обводке-плейсхолдере 200px -->
+      <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#3d3d4d" stroke-width="3"/>
+      <rect x="-46" y="-10" width="92" height="86" rx="10" fill="BODY"/>       <!-- туловище/плащ -->
+      <circle cx="0" cy="-34" r="34" fill="#e8b98a"/>                          <!-- лицо -->
+      <path d="M-30 -46 q30 -34 60 0 v10 h-60 z" fill="HELM"/>                 <!-- каска -->
+      <path d="M-26 -18 q26 44 52 0 q-8 40 -26 44 q-18 -4 -26 -44z" fill="BEARD"/> <!-- борода -->
+      <rect x="52" y="-40" width="10" height="80" rx="4" fill="#7a5a38"/>      <!-- древко топора -->
+      <path d="M40 -52 h46 l-10 24 h-26 z" fill="#b8bec6"/>                     <!-- лезвие -->
+      <circle cx="-12" cy="-36" r="4" fill="#222"/><circle cx="12" cy="-36" r="4" fill="#222"/>
+    </g>
+  </defs>
+  <use href="#dwarf" transform="translate(130,160)" style="--BODY:#b3562e;--HELM:#d9c63f;--BEARD:#e07a3f"/>
+  <g transform="translate(130,160)">
+    <rect x="-46" y="-10" width="92" height="86" rx="10" fill="#b3562e"/>
+    <path d="M-30 -46 q30 -34 60 0 v10 h-60 z" fill="#d9c63f"/>
+    <path d="M-26 -18 q26 44 52 0 q-8 40 -26 44 q-18 -4 -26 -44z" fill="#e07a3f"/>
+    <text y="125" text-anchor="middle" font-family="monospace" fill="#e8a" font-size="18">Dwarf P1 (orange)</text>
+  </g>
+  <g transform="translate(350,160)">
+    <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#3d3d4d" stroke-width="3"/>
+    <rect x="-46" y="-10" width="92" height="86" rx="10" fill="#3f8fb8"/>
+    <circle cx="0" cy="-34" r="34" fill="#e8b98a"/>
+    <path d="M-30 -46 q30 -34 60 0 v10 h-60 z" fill="#c8ccd4"/>
+    <path d="M-26 -18 q26 44 52 0 q-8 40 -26 44 q-18 -4 -26 -44z" fill="#d9b23f"/>
+    <rect x="52" y="-40" width="10" height="80" rx="4" fill="#7a5a38"/>
+    <path d="M40 -52 h46 l-10 24 h-26 z" fill="#b8bec6"/>
+    <text y="125" text-anchor="middle" font-family="monospace" fill="#8cf" font-size="18">Dwarf P2 (blue)</text>
+  </g>
+  <g transform="translate(570,160)">
+    <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#3d3d4d" stroke-width="3"/>
+    <rect x="-46" y="-10" width="92" height="86" rx="10" fill="#c9b23c"/>
+    <circle cx="0" cy="-34" r="34" fill="#e8b98a"/>
+    <path d="M-30 -46 q30 -34 60 0 v10 h-60 z" fill="#8a8f98"/>
+    <path d="M-26 -18 q26 44 52 0 q-8 40 -26 44 q-18 -4 -26 -44z" fill="#8f6a2f"/>
+    <rect x="52" y="-40" width="10" height="80" rx="4" fill="#7a5a38"/>
+    <path d="M40 -52 h46 l-10 24 h-26 z" fill="#b8bec6"/>
+    <text y="125" text-anchor="middle" font-family="monospace" fill="#fe8" font-size="18">Dwarf P3 (yellow)</text>
+  </g>
+  <g transform="translate(790,160)">
+    <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#3d3d4d" stroke-width="3"/>
+    <rect x="-46" y="-10" width="92" height="86" rx="10" fill="#5fa35c"/>
+    <circle cx="0" cy="-34" r="34" fill="#e8b98a"/>
+    <path d="M-30 -46 q30 -34 60 0 v10 h-60 z" fill="#d9c63f"/>
+    <path d="M-26 -18 q26 44 52 0 q-8 40 -26 44 q-18 -4 -26 -44z" fill="#cfd6dd"/>
+    <rect x="52" y="-40" width="10" height="80" rx="4" fill="#7a5a38"/>
+    <path d="M40 -52 h46 l-10 24 h-26 z" fill="#b8bec6"/>
+    <text y="125" text-anchor="middle" font-family="monospace" fill="#9f9" font-size="18">Dwarf P4 (green)</text>
+  </g>
+</svg>
