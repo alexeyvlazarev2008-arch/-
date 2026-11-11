@@ -75,8 +75,15 @@ func _handle_lines(chunk: PackedByteArray) -> void:
 		if nl < 0: break
 		var line := _buf.slice(0, nl).get_string_from_utf8()
 		_buf = _buf.slice(nl + 1)
-		var parsed := JSON.parse_string(line)
-		if parsed is Dictionary:
+		# line может быть битой (обрывок на границе TCP-пакета) или невалидным
+		# JSON — parse_string вернёт null. Проверяем тип до обращения к словарю.
+		if line.strip_edges().is_empty():
+			continue
+		var parsed = JSON.parse_string(line)
+		if not (parsed is Dictionary):
+			push_warning("NetworkClient: не удалось разобрать строку сервера: %s" % line)
+			continue
+		if true:
 			# One Time ID: сервер в каждом ответе присылает свежий токен.
 			if parsed.has("token"):
 				otid = parsed["token"]
