@@ -48,10 +48,13 @@ void TcpServer::accept_loop() {
 }
 
 void TcpServer::client_loop(int fd) {
+    std::string peer;
     {
         std::lock_guard<std::mutex> lk(clients_mu_);
-        clients_[fd] = "client-" + std::to_string(fd);
+        peer = "client-" + std::to_string(fd);
+        clients_[fd] = peer;
     }
+    if (on_connect_) on_connect_(peer);
     std::string buf;
     char chunk[4096];
     while (running_) {
@@ -63,7 +66,7 @@ void TcpServer::client_loop(int fd) {
             std::string line = buf.substr(0, nl);
             buf.erase(0, nl + 1);
             if (!line.empty() && line.back() == '\r') line.pop_back();
-            std::string resp = handler_ ? handler_(fd, clients_[fd], line) : "";
+            std::string resp = handler_ ? handler_(fd, peer, line) : "";
             if (!resp.empty()) send_to(fd, resp);
         }
     }
@@ -71,12 +74,23 @@ void TcpServer::client_loop(int fd) {
         std::lock_guard<std::mutex> lk(clients_mu_);
         clients_.erase(fd);
     }
+    if (on_disconnect_) on_disconnect_(peer);
     ::close(fd);
 }
 
 void TcpServer::send_to(int fd, const std::string& msg) {
     std::string data = msg + "\n";
     ::send(fd, data.data(), data.size(), MSG_NOSIGNAL);
+}
+
+void TcpServer::send_to_peer(const std::string& peer, const std::string& msg) {
+    int fd = -1;
+    {
+        std::lock_guard<std::mutex> lk(clients_mu_);
+        for (auto& [f, name] : clients_)
+            if (name == peer) { fd = f; break; }
+    }
+    if (fd >= 0) send_to(fd, msg);
 }
 
 void TcpServer::broadcast(const std::string& msg) {

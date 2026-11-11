@@ -17,11 +17,15 @@ class TcpServer {
 public:
     explicit TcpServer(int port);
     ~TcpServer();
+    using ConnHandler = std::function<void(const std::string&)>;
     void set_handler(MsgHandler h) { handler_ = std::move(h); }
+    void set_on_connect(ConnHandler h) { on_connect_ = std::move(h); }
+    void set_on_disconnect(ConnHandler h) { on_disconnect_ = std::move(h); }
     bool start();            // non-blocking accept loop in background thread
     void stop();
     void broadcast(const std::string& msg);          // to all clients
     void send_to(int fd, const std::string& msg);
+    void send_to_peer(const std::string& peer, const std::string& msg);
     int client_count() const;
 
 private:
@@ -33,6 +37,8 @@ private:
     std::atomic<bool> running_{false};
     std::thread accept_thread_;
     MsgHandler handler_;
+    ConnHandler on_connect_;
+    ConnHandler on_disconnect_;
     mutable std::mutex clients_mu_;
     std::map<int, std::string> clients_;  // fd -> peer name
 };
