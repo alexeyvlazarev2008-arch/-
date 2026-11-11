@@ -1,0 +1,5 @@
+res://control.gd
+res://board.gd
+res://board.tscn
+res://cell.tscn
+res://character_body_2d.gd
