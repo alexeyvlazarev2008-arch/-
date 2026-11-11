@@ -1,0 +1,69 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/identity.gd" id="1_id"]
+
+[node name="IdentityScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_id")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.12, 0.1, 0.16, 1)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 390.0
+offset_top = 140.0
+offset_right = 890.0
+offset_bottom = 520.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 480.0
+offset_bottom = 360.0
+theme_override_constants/separation = 14
+
+[node name="Header" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Имя и класс игрока"
+
+[node name="NameRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Panel/VBox/NameRow"]
+layout_mode = 2
+text = "Никнейм:"
+
+[node name="NameEdit" type="LineEdit" parent="Panel/VBox/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Гном-копатель"
+
+[node name="ClassRow" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="ClassLabel" type="Label" parent="Panel/VBox/ClassRow"]
+layout_mode = 2
+text = "Класс:"
+
+[node name="ClassOption" type="OptionButton" parent="Panel/VBox/ClassRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OkButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Продолжить"
+
+[node name="Status" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+text = "..."

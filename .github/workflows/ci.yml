@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+
+jobs:
+  backend-cpp:
+    name: Backend C++ (build + tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y cmake g++
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Run tests
+        run: ./build/test_game
+
+  godot-frontend:
+    name: Godot Frontend (import check + web export)
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot
+        run: |
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
+          godot --headless --version
+      - name: Import project (headless)
+        working-directory: frontend
+        run: godot --headless --import
+      - name: Web export
+        working-directory: frontend
+        run: |
+          curl -fsSL -o templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q templates.tpz -d tmpl
+          mv tmpl/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          godot --headless --export-release "Web" build/web/index.html
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-web-build
+          path: frontend/build/web
+
+  python-tests:
+    name: Python tests (game logic + frontend structure)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run tests
+        run: python -m pytest tests -v
+
+  art-validation:
+    name: Art (SVG validation)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate SVG files
+        run: |
+          python - <<'PY'
+          import glob, sys
+          import xml.etree.ElementTree as ET
+          files = glob.glob('art/**/*.svg', recursive=True) + glob.glob('frontend/art/**/*.svg', recursive=True)
+          if not files:
+              print('No SVG files found'); sys.exit(1)
+          for f in files:
+              ET.parse(f)
+              print('OK:', f)
+          PY
