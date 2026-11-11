@@ -1,6 +1,6 @@
 class_name Dwarf
-extends Character
-## Гном — игровой персонаж игрока (наследник Character, issue #3).
+extends GameCharacter
+## Гном — игровой персонаж игрока (наследник GameCharacter, issue #3).
 
 const COLORS: Array[Color] = [
 	Color(0.90, 0.45, 0.20),  # игрок 1 — рыжий

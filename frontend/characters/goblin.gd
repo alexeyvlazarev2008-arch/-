@@ -1,5 +1,5 @@
 class_name Goblin
-extends Character
+extends GameCharacter
 ## Гоблин-лазутчик — появляется на зелёных клетках после GOBLIN_START_TURN.
 
 func _ready() -> void:

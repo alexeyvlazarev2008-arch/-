@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
-backend/build_test/
+.import/
+export.cfg
+export_presets.cfg

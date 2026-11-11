@@ -19,19 +19,32 @@ func _ready() -> void:
 	size_option.select(GameConfig.BOARD_SIZES.find(GameConfig.DEFAULT_BOARD_SIZE))
 
 func _on_create_room_pressed() -> void:
-	# Кнопка "Создать комнату": шлём C++ backend {"type":"create_room"},
-	# сервер отвечает {"type":"room_created","id":...} — id сохраняем в GameState
-	# через autoload Net и открываем список комнат.
+	# Кнопка "Создать комнату" ведёт НЕ на список комнат (как "Выбрать комнату"),
+	# а открывает сцену ввода имени новой комнаты. После подтверждения шлём backend
+	# {"type":"create_room","name":...}; когда сервер ответит
+	# {"type":"room_created","id":...} (сигнал Net.room_created), сцена room_list
+	# зайдёт в комнату и откроет сцену поля.
+	var dialog := $CreateRoomDialog
+	dialog.popup_centered()
+	var edit: LineEdit = dialog.find_child("NameEdit", true, false)
+	if edit and edit.text.strip_edges().is_empty():
+		edit.text = "Комната %d" % (randi() % 1000)
+
+func _on_create_dialog_confirmed() -> void:
+	var dialog := $CreateRoomDialog
+	var edit: LineEdit = dialog.find_child("NameEdit", true, false)
+	var room_name := edit.text.strip_edges() if edit else ""
+	if room_name.is_empty():
+		room_name = "Комната %d" % (randi() % 1000)
+	GameState.pending_room_name = room_name
 	Net.server_error.connect(_on_net_error)
 	if not Net.is_connected_to_server():
-		Net.connected_to_server.connect(_send_create_room)
+		# Подключение асинхронное — create_room отправим после connect (см. Net.create_room_deferred).
+		Net.create_room_deferred(room_name)
 		Net.connect_to_server(GameConfig.SERVER_HOST, GameConfig.SERVER_PORT)
 	else:
-		_send_create_room()
+		Net.create_room(room_name)
 	get_tree().change_scene_to_file("res://scenes/room_list.tscn")
-
-func _send_create_room() -> void:
-	Net.create_room("Комната %d" % (randi() % 100))
 
 func _on_net_error(msg: String) -> void:
 	push_warning("backend: " + msg)

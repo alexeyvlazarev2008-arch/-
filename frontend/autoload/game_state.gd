@@ -12,6 +12,8 @@ func start_local_mp(size: int = GameConfig.DEFAULT_BOARD_SIZE) -> void:
 
 # --- Онлайн-режим (связь с C++ backend) ---
 var room_id: String = ""
+# Имя комнаты из диалога «Создать комнату» (главное меню).
+var pending_room_name: String = ""
 var player_name: String = "Гном"
 var player_class: String = "dwarf"
 const CLASSES: Array[String] = ["dwarf", "goblin_scout"]
