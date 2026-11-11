@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320">
+  <rect width="640" height="320" fill="#101a12"/>
+  <g transform="translate(160,160)">
+    <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#2f4a2f" stroke-width="3"/>
+    <ellipse cx="0" cy="-20" rx="42" ry="36" fill="#57a04d"/>            <!-- голова -->
+    <path d="M-42 -34 l-26 -18 10 26 z" fill="#57a04d"/>                  <!-- ухо L -->
+    <path d="M42 -34 l26 -18 -10 26 z" fill="#57a04d"/>                   <!-- ухо R -->
+    <circle cx="-14" cy="-24" r="6" fill="#d33"/><circle cx="14" cy="-24" r="6" fill="#d33"/>
+    <path d="M-18 0 q18 14 36 0 q-8 12 -18 12 q-10 0 -18 -12z" fill="#2e5a28"/>
+    <rect x="-30" y="18" width="60" height="60" rx="8" fill="#6b5a3a"/>   <!-- лохмотья -->
+    <path d="M40 30 l34 -20 -6 16 10 4 -38 22 z" fill="#8a8f98"/>         <!-- кинжал -->
+    <text y="118" text-anchor="middle" font-family="monospace" fill="#7d7" font-size="18">Goblin scout</text>
+  </g>
+  <g transform="translate(460,160)">
+    <rect x="-100" y="-100" width="200" height="200" fill="none" stroke="#2f4a2f" stroke-width="3"/>
+    <ellipse cx="0" cy="-20" rx="42" ry="36" fill="#4a8f42"/>
+    <path d="M-42 -34 l-26 -18 10 26 z" fill="#4a8f42"/>
+    <path d="M42 -34 l26 -18 -10 26 z" fill="#4a8f42"/>
+    <circle cx="-14" cy="-24" r="6" fill="#e55"/><circle cx="14" cy="-24" r="6" fill="#e55"/>
+    <path d="M-20 -2 q20 20 40 0" stroke="#1d3a18" stroke-width="4" fill="none"/>
+    <rect x="-34" y="18" width="68" height="60" rx="8" fill="#4a3a2a"/>
+    <circle cx="0" cy="-64" r="14" fill="none" stroke="#9f9" stroke-width="3"/>  <!-- шлем-рогатка -->
+    <path d="M-12 -74 l-8 -18 14 8 z M12 -74 l8 -18 -14 8 z" fill="#9f9"/>
+    <text y="118" text-anchor="middle" font-family="monospace" fill="#7d7" font-size="18">Goblin raider (turn 12+)</text>
+  </g>
+</svg>

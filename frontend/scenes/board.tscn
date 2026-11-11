@@ -1,0 +1,58 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/board.gd" id="1_board"]
+[ext_resource type="Script" path="res://characters/dwarf.gd" id="2_dwarf"]
+
+[sub_resource type="Gradient" id="Gradient_bg"]
+colors = PackedColorArray(0.07, 0.06, 0.1, 1, 0.15, 0.12, 0.18, 1)
+
+[sub_resource type="GradientTexture2D" id="GradTex_bg"]
+gradient = SubResource("Gradient_bg")
+fill_from = Vector2(0, 0)
+fill_to = Vector2(1, 1)
+
+[node name="Board" type="Node2D"]
+script = ExtResource("1_board")
+
+[node name="Background" type="TextureRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = SubResource("GradTex_bg")
+stretch_mode = 1
+
+[node name="HUD" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 12.0
+offset_right = 900.0
+offset_bottom = 44.0
+theme_override_colors/font_color = Color(0.95, 0.93, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+text = "Ход"
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 820.0
+offset_top = 560.0
+offset_right = 1260.0
+offset_bottom = 700.0
+
+[node name="EndTurnButton" type="Button" parent="UI"]
+layout_mode = 0
+offset_right = 420.0
+offset_bottom = 48.0
+text = "Закончить ход"
+
+[node name="CardButton" type="Button" parent="UI"]
+layout_mode = 0
+offset_top = 60.0
+offset_right = 420.0
+offset_bottom = 108.0
+text = "Использовать карту: Прыжок на 2 клетки"
+
+[node name="MenuButton" type="Button" parent="UI"]
+layout_mode = 0
+offset_top = 120.0
+offset_right = 420.0
+offset_bottom = 140.0
+text = "В главное меню"
