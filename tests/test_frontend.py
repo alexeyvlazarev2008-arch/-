@@ -35,10 +35,10 @@ def test_character_class_hierarchy():
     char = (FRONTEND / "characters" / "character.gd").read_text(encoding="utf-8")
     dwarf = (FRONTEND / "characters" / "dwarf.gd").read_text(encoding="utf-8")
     goblin = (FRONTEND / "characters" / "goblin.gd").read_text(encoding="utf-8")
-    assert "class_name GameCharacter" in char
+    assert "class_name Character" in char
     assert "extends Node2D" in char
-    assert "class_name Dwarf" in dwarf and "extends GameCharacter" in dwarf
-    assert "class_name Goblin" in goblin and "extends GameCharacter" in goblin
+    assert "class_name Dwarf" in dwarf and "extends Character" in dwarf
+    assert "class_name Goblin" in goblin and "extends Character" in goblin
 
 
 def test_board_script_turn_system():

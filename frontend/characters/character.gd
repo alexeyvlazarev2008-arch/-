@@ -1,4 +1,4 @@
-class_name GameCharacter
+class_name Character
 extends Node2D
 ## Базовый класс персонажа (issue #3). Хранит позицию на поле и цвет-плейсхолдер.
 

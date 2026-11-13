@@ -72,17 +72,3 @@ text = "Размер поля:"
 
 [node name="SizeOption" type="OptionButton" parent="VBox/SizeRow"]
 layout_mode = 2
-
-[node name="CreateRoomDialog" type="AcceptDialog" parent="."]
-title = "Имя новой комнаты"
-ok_button_text = "Создать"
-dialog_text = "Введите название комнаты, которую хотите создать:"
-[connection signal="confirmed" from="CreateRoomDialog" to="." method="_on_create_dialog_confirmed"]
-
-[node name="NameEdit" type="LineEdit" parent="CreateRoomDialog"]
-unique_name_in_owner = true
-offset_left = 24.0
-offset_top = 64.0
-offset_right = 396.0
-offset_bottom = 96.0
-placeholder_text = "Например, Шахта №1"

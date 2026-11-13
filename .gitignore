@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
-.import/
-export.cfg
-export_presets.cfg
+.env
+.venv/
+venv/
+.vscode/
+.idea/

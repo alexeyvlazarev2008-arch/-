@@ -21,7 +21,6 @@ var _buf := PackedByteArray()
 var _warned_web := false
 var last_created_room := ""
 var last_state := {}
-var _pending_create_name := ""
 # One Time ID: выдаётся сервером при подключении, одноразовый —
 # каждый ответ сервера содержит свежий токен для следующего запроса.
 var otid := ""
@@ -62,10 +61,6 @@ func _process(_dt: float) -> void:
 	if not _connected:
 		_connected = true
 		connected_to_server.emit()
-		if not _pending_create_name.is_empty():
-			var nm := _pending_create_name
-			_pending_create_name = ""
-			create_room(nm)
 	var avail := _peer.get_available_bytes()
 	while avail > 0:
 		var data := _peer.get_data(avail)
@@ -121,13 +116,8 @@ func _handle_lines(chunk: PackedByteArray) -> void:
 func _send(obj: Dictionary) -> void:
 	_peer.put_data((JSON.stringify(_next_obj(obj)) + "\n").to_utf8_buffer())
 
-func create_room(room_name: String) -> void:
-	_send({"type": "create_room", "name": room_name, "nickname": GameState.player_name, "class": GameState.player_class})
-
-# Вызывается из главного меню ДО установки TCP-соединения: имя запоминаем,
-# запрос уйдёт автоматически сразу после подключения (см. connected_to_server ниже).
-func create_room_deferred(room_name: String) -> void:
-	_pending_create_name = room_name
+func create_room(name: String) -> void:
+	_send({"type": "create_room", "name": name, "nickname": GameState.player_name, "class": GameState.player_class})
 func list_rooms() -> void: _send({"type": "list_rooms"})
 func join_room(id: String, player: String) -> void:
 	_send({"type": "join", "room": id, "player": player, "nickname": GameState.player_name, "class": GameState.player_class})
