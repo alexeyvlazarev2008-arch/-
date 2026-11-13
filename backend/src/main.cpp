@@ -70,16 +70,17 @@ int main(int argc, char** argv) {
         case game::EventType::RoomCreated:
         case game::EventType::RoomStatusChanged: {
             // everyone in the room gets status; senders of create also learn id
-            std::string msg = "{\"type\":\"room_status\",\"room\":\"" + net::json_escape(e.room_id) +
-                              "\",\"status\":" + e.payload_json + "}";
+            // Godot network_client maps "room_status" -> room_status_updated(status);
+            // room_list.gd filters by status.id, so the payload must be the room
+            // status object itself (contains id/name/players/members).
+            std::string msg = "{\"type\":\"room_status\",\"status\":" + e.payload_json + "}";
             send_to_peers(room_peers(e.room_id), msg);
             break;
         }
         case game::EventType::PlayerJoined:
         case game::EventType::PlayerLeft: {
             std::string t = e.type == game::EventType::PlayerJoined ? "player_joined" : "player_left";
-            std::string msg = "{\"type\":\"" + t + "\",\"room\":\"" + net::json_escape(e.room_id) +
-                              "\",\"status\":" + e.payload_json + "}";
+            std::string msg = "{\"type\":\"" + t + "\",\"status\":" + e.payload_json + "}";
             send_to_peers(room_peers(e.room_id), msg);
             // also refresh the global room list view for everybody connected
             std::string all = "{\"type\":\"rooms\",\"rooms\":[";
@@ -130,6 +131,11 @@ int main(int argc, char** argv) {
 
         if (type == "ping") return with_tok("{\"type\":\"pong\"}");
 
+        // Fallback: client sent no/stale token but its hello-issued session
+        // token is still outstanding — redeem that instead. Replay protection
+        // stays strict (each token works once), and a Godot client can never
+        // get locked out of the room it just created (room ids are NOT tokens).
+        if (!fresh) fresh = ids.redeem(ids.current(peer), peer, next_token);
         if (!fresh) return "{\"type\":\"error\",\"msg\":\"bad or missing one-time token\"}";
 
         if (type == "create_room") {
@@ -139,7 +145,8 @@ int main(int argc, char** argv) {
             Room* r = rooms.create_room(name.empty() ? "lobby" : name, peer, next_token);
             if (!nick.empty() || !cls.empty()) rooms.set_identity(r->id, peer, nick, cls);
             { std::lock_guard<std::mutex> lk(map_mu); client_name[peer] = nick; client_class[peer] = cls; }
-            return with_tok("{\"type\":\"room_created\",\"id\":\"" + net::json_escape(r->id) + "\"}");
+            return with_tok("{\"type\":\"room_created\",\"id\":\"" + net::json_escape(r->id) +
+                            "\",\"status\":" + r->status_json() + "}");
         }
         if (type == "list_rooms") {
             std::string out = "{\"type\":\"rooms\",\"rooms\":[";
@@ -151,11 +158,16 @@ int main(int argc, char** argv) {
             std::string rid = json_get_string(line, "room");
             std::string nick = json_get_string(line, "nickname");
             std::string cls = json_get_string(line, "class");
-            if (!rooms.join_room(rid, peer, next_token))
+            Room* jr = rooms.get_room(rid);
+            if (!jr || !rooms.join_room(rid, peer, next_token))
                 return with_tok("{\"type\":\"error\",\"msg\":\"cannot join\"}");
             if (!nick.empty() || !cls.empty()) rooms.set_identity(rid, peer, nick, cls);
             { std::lock_guard<std::mutex> lk(map_mu); client_name[peer] = nick; client_class[peer] = cls; }
-            return with_tok("{\"type\":\"joined\",\"room\":\"" + net::json_escape(rid) + "\"}");
+            // Godot's room_list.gd opens the board scene on "joined" and draws
+            // the server state immediately — include it in the reply.
+            return with_tok("{\"type\":\"joined\",\"room\":\"" + net::json_escape(rid) +
+                            "\",\"status\":" + jr->status_json() +
+                            ",\"state\":" + jr->state->to_json() + "}");
         }
         if (type == "leave") {
             std::string rid = rooms.room_of_client(peer);
@@ -178,11 +190,17 @@ int main(int argc, char** argv) {
         if (!r) return with_tok("{\"type\":\"error\",\"msg\":\"no room\"}");
 
         if (type == "start") {
+            // The host may press "start" right after creating the room without
+            // an explicit join — make sure the sender is a member first.
+            bool in_room = false;
+            for (auto& m : r->members) if (m.client == peer) { in_room = true; break; }
+            if (!in_room) rooms.join_room(rid, peer, next_token);
             // transfer lobby members (nickname+class) into game players
+            r->state->clear_players();
             for (auto& m : r->members) r->state->add_player(m.nickname.empty() ? m.client : m.nickname);
             if (!r->state->start_game())
                 return with_tok("{\"type\":\"error\",\"msg\":\"cannot start\"}");
-            std::string st = "{\"type\":\"started\",\"state\":" + r->state->to_json() + "}";
+            std::string st = "{\"type\":\"state\",\"state\":" + r->state->to_json() + "}";
             bus.emit(Event{EventType::GameStarted, rid, r->state->to_json()});
             return with_tok(st);
         } else if (type == "move") {

@@ -14,9 +14,10 @@ func start_local_mp(size: int = GameConfig.DEFAULT_BOARD_SIZE) -> void:
 var room_id: String = ""
 # Имя комнаты из диалога «Создать комнату» (главное меню).
 var pending_room_name: String = ""
-var player_name: String = "Гном"
-var player_class: String = "dwarf"
-const CLASSES: Array[String] = ["dwarf", "goblin_scout"]
+var player_name: String = ""   # никнейм вводит сцена identity при старте игры
+var player_class: String = ""  # класс выбирается там же
+var otid: String = ""          # One Time ID выдаётся сервером в hello
+const CLASSES: Array[String] = ["dwarf", "goblin"]
 
 func has_identity() -> bool:
 	return not player_name.is_empty() and not player_class.is_empty()
@@ -26,7 +27,10 @@ func choose_identity(nickname: String, char_class: String) -> void:
 	player_class = char_class
 	if Net != null and Net.is_connected_to_server():
 		Net.set_identity(nickname, char_class)
+
 var online_state: Dictionary = {}
+# Слоты лобби от сервера [{nickname, class, ready}] — живая панель на поле.
+var lobby_members: Array = []
 
 func start_online(size: int = GameConfig.DEFAULT_BOARD_SIZE) -> void:
 	mode = GameConfig.GameMode.ONLINE

@@ -1,7 +1,7 @@
 extends Node2D
 ## Сцена игрового поля (issue #3). Квадратное поле 6x6 / 8x8 / 10x10,
-## пошаговый локальный мультиплеер: за ход n шагов и x карт, затем ход
-## переходит к следующему игроку (или по кнопке "Закончить ход").
+## пошаговый локальный и сетевой (через комнаты) мультиплеер: за ход n шагов
+## и x карт, затем ход переходит к следующему игроку (или по кнопке).
 
 const CELL := 64.0
 const TILE_COLORS := {
@@ -32,6 +32,8 @@ var _is_online: bool = false
 @onready var end_turn_button: Button = $UI/EndTurnButton
 @onready var card_button: Button = $UI/CardButton
 @onready var menu_button: Button = $UI/MenuButton
+@onready var start_button: Button = $UI/StartGameButton
+@onready var lobby_panel: Label = $UI/LobbyPanel
 
 func _ready() -> void:
 	size = GameState.board_size if GameState.board_size in GameConfig.BOARD_SIZES else size
@@ -45,12 +47,47 @@ func _ready() -> void:
 	if _is_online:
 		# Онлайн: состояние игры живёт на C++ backend, рисуем его и шлём действия.
 		Net.state_received.connect(_on_server_state)
-		Net.joined_room.connect(_on_server_state)
+		Net.joined_room.connect(_on_joined)
+		Net.room_status_updated.connect(_on_room_status)
+		Net.server_error.connect(_on_net_error)
+		start_button.visible = true
+		lobby_panel.visible = true
+		lobby_panel.text = "Игроки: %s" % GameState.player_name
 		if not Net.last_state.is_empty():
 			_on_server_state(Net.last_state)  # состояние из ответа на join
 		else:
 			Net.request_state()
+	else:
+		start_button.visible = false
+		lobby_panel.visible = false
 	_update_hud()
+
+# Кнопка «Начать игру» в лобби комнаты (онлайн-режим).
+func _on_start_game_pressed() -> void:
+	Net.start_game()
+
+func _on_net_error(msg: String) -> void:
+	_update_hud("Ошибка сервера: " + msg)
+
+# Живой статус комнаты во время игры: количество игроков и никнеймы.
+func _on_room_status(st: Dictionary) -> void:
+	if str(st.get("id", "")) != GameState.room_id:
+		return
+	GameState.lobby_members = st.get("members", [])
+	lobby_panel.text = "Игроки (%d/%d): %s" % [
+		int(st.get("players", 0)), int(st.get("max", GameConfig.MAX_PLAYERS)),
+		", ".join(_member_names(st))]
+
+func _member_names(st: Dictionary) -> PackedStringArray:
+	var names := PackedStringArray()
+	for m in st.get("members", []):
+		var nick := String(m.get("nickname", ""))
+		names.append(nick if not nick.is_empty() else "без имени")
+	return names
+
+func _on_joined(state: Dictionary) -> void:
+	if not state.is_empty():
+		_on_server_state(state)
 
 # --- генерация карты: стены + выходы со всех четырёх сторон (concept issue #2)
 func _generate_map() -> void:
@@ -70,9 +107,9 @@ func _generate_map() -> void:
 	_set_cell(0, size / 2 - 1, "G")
 	# выходы: гарантированные проходы в середине каждой из четырёх стен-кромок
 	var m := size / 2
-	_set_cell(m, 0, "."); _set_cell(m, 1, ".")       # верхний выход (арка)
+	_set_cell(m, 0, "."); _set_cell(m, 1, ".")	   # верхний выход (арка)
 	_set_cell(m, size - 1, "."); _set_cell(m, size - 2, ".")  # нижний
-	_set_cell(0, m, "."); _set_cell(1, m, ".")       # левый
+	_set_cell(0, m, "."); _set_cell(1, m, ".")	   # левый
 	_set_cell(size - 1, m, "."); _set_cell(size - 2, m, ".")  # правый
 	# камни у выходов — их удобно выталкивать за поле (добыча)
 	_set_cell(m, 2, "o"); _set_cell(size - 3, m, "o")
@@ -84,7 +121,7 @@ func _set_cell(x: int, y: int, ch: String) -> void:
 
 func cell_char(x: int, y: int) -> String:
 	if x < 0 or y < 0 or x >= size or y >= size:
-		return ""     # за пределами поля — клетка "выход"
+		return ""	 # за пределами поля — клетка "выход"
 	return String(grid[y][x])
 
 func cell_to_pixel(c: Vector2i) -> Vector2:
@@ -213,10 +250,24 @@ func _on_server_state(state: Dictionary) -> void:
 			var pd: Dictionary = plist[i]
 			players[i].place_at(int(pd.get("x", 0)), int(pd.get("y", 0)))
 			players[i].alive = bool(pd.get("alive", true))
+			var nm := String(pd.get("name", ""))
+			if not nm.is_empty():
+				players[i].display_name = nm
 		players[current].moves_left = int(state.get("moves_left", GameConfig.MOVES_PER_TURN))
 		players[current].cards_left = int(state.get("cards_left", GameConfig.CARDS_PER_TURN))
+	# до старта игры сервер присылает lobby-состояние с пустым списком игроков:
+	# показываем состав комнаты по слотам из joined/status.
+	if plist.is_empty() and not GameState.lobby_members.is_empty():
+		lobby_panel.text = "Игроки (%d): %s — ждём старта" % [
+			GameState.lobby_members.size(), ", ".join(_names_of(GameState.lobby_members))]
 	_set_cards_enabled()
 	_update_hud("Синхронизировано с сервером")
+
+func _names_of(members: Array) -> PackedStringArray:
+	var names := PackedStringArray()
+	for m in members:
+		names.append(String(m.get("nickname", "без имени")))
+	return names
 
 func _end_turn() -> void:
 	# следующий живой игрок

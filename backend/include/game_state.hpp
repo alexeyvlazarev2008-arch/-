@@ -77,6 +77,7 @@ public:
 
     // --- mutations (return false on invalid action) --------------------
     bool add_player(const std::string& name);
+    void clear_players();                      // reset lobby slots before (re)start
     bool start_game();                       // lobby -> playing
     bool move_current(int dx, int dy);       // one step with push rules
     bool use_card(const std::string& card_id); // reserved for future card system

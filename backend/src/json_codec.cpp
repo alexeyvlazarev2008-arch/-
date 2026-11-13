@@ -16,15 +16,36 @@ std::string json_escape(const std::string& s) {
     return o;
 }
 
+// Find the value position of a top-level key. Two correctness fixes:
+//  1. Keys are matched only OUTSIDE string values (previously searching for
+//     "room" matched the substring inside the VALUE "room-1-slug", so the
+//     server read the room id as the room to join -> every join failed).
+//  2. The character after the closing quote must be ':' (so searching "name"
+//     does not match the prefix of "nickname").
 static std::string find_key(const std::string& j, const std::string& k) {
     std::string pat = "\"" + k + "\"";
-    size_t p = j.find(pat);
-    if (p == std::string::npos) return "";
-    p = j.find(':', p + pat.size());
-    if (p == std::string::npos) return "";
-    ++p;
-    while (p < j.size() && std::isspace((unsigned char)j[p])) ++p;
-    return std::to_string(p);  // encode position as string
+    bool in_str = false;
+    for (size_t i = 0; i < j.size(); ++i) {
+        char c = j[i];
+        if (in_str) {
+            if (c == '\\') ++i;
+            else if (c == '"') in_str = false;
+            continue;
+        }
+        if (c == '"') {
+            if (j.compare(i, pat.size(), pat) == 0) {
+                size_t after = i + pat.size();
+                while (after < j.size() && std::isspace((unsigned char)j[after])) ++after;
+                if (after < j.size() && j[after] == ':') {
+                    ++after;
+                    while (after < j.size() && std::isspace((unsigned char)j[after])) ++after;
+                    return std::to_string(after);  // encode position as string
+                }
+            }
+            in_str = true;
+        }
+    }
+    return "";
 }
 
 std::string json_get_string(const std::string& j, const std::string& k) {

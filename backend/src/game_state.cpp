@@ -36,7 +36,7 @@ static const char* cell_to_char(Cell c) {
 // One map per supported board size. '.' floor, '#' wall, 'o' stone, 'g' gem,
 // 'x' box, 'm' mushroom, 'c' crystal, 'Y' yellow spawn, 'G' green spawn.
 static const char* MAP_6[] = {
-    "..#..Y",
+    "..#..Y",   // угол (0,0) свободен — спавн игроков
     ".o#.#.",
     "#..g..",
     "..#.o#",
@@ -140,6 +140,10 @@ bool GameState::add_player(const std::string& name) {
         }
     players_.push_back(p);
     return true;
+}
+
+void GameState::clear_players() {
+    if (phase_ == Phase::Lobby) players_.clear();
 }
 
 bool GameState::start_game() {
